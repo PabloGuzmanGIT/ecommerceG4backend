@@ -1,0 +1,8 @@
+entorno_django/
+__pycache__/
+.env
+#archivos de iamgenes
+*.jpg
+*.jpeg
+*.bmp
+*.png
