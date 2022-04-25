@@ -47,8 +47,8 @@ INSTALLED_APPS = [
     #aplicaciones
     #'corsheaders',
      'autorizacion',
-    # 'fac_electronica',
-    # 'lista_producto'
+     'fac_electronica',
+     'lista_producto'
 ]
 
 MIDDLEWARE = [

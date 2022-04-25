@@ -12,8 +12,8 @@ class RegistroUsuarioSeriaizer(serializers.ModelSerializer):
     
     class Meta:
         model=Usuario
-        #fields='__all__'
-        exclude=['groups','user_permissions']
+        fields='__all__'
+        #exclude=['groups','user_permissions']
         # mediante el atribuo extra_kwargs indicar pass solo escritura
         extra_kwargs={
             'password':{'write_only':True},            
