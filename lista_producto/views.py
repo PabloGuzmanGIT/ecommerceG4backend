@@ -36,8 +36,8 @@ class MuebleApiView(ListCreateAPIView):
     def get(self, request: Request):
         data = self.serializer_class(instance=self.get_queryset(), many=True)       
         print(data.data[1].get('foto1'))
-        print(data.data[2].get('foto2'))
-        print(data.data[3].get('foto3'))
+        print(data.data[1].get('foto2'))
+        print(data.data[1].get('foto3'))
         return Response(data=data.data)
 class ListaProductoApiView(ListCreateAPIView):
     # serializer_class=StockSerializer
