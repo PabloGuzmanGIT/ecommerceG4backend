@@ -6,7 +6,7 @@ from .authManager import UserManager
 class Usuario(AbstractBaseUser, PermissionsMixin):
     id=models.AutoField(primary_key=True)
     nombre=models.CharField(max_length=45,null=False)
-    apellidos=models.CharField(max_length=90,unique=True,null=False)
+    apellidos=models.CharField(max_length=90,null=False)
     correo=models.EmailField(unique=True,null=False)
     telefono=models.IntegerField(null=False)
     usuario=models.CharField(max_length=45,unique=True,null=False)

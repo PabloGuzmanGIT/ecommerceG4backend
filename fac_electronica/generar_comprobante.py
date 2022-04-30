@@ -1,7 +1,7 @@
 import requests
 from django.db import connection
 from .models import Comprobante,Pedido,DetallePedido
-from lista_producto.models import Mueble,ListaProducto
+from lista_producto.models import Muebles,ListaProducto
 from os import environ
 from datetime import datetime
 
@@ -97,7 +97,7 @@ def generar_comprobante(tipo_de_comprobante: int,tipo_documento:str,numero_docum
         #extraigo el stock de ese detalle
         lista_producto:ListaProducto =detalle.listaProductoId
         #extraigo el mueble de esa lista de producto
-        mueble:Mueble =lista_producto.muebleId
+        mueble:Muebles =lista_producto.muebleId
 
         unidad_de_medida="NIU"
         codigo=mueble.id
