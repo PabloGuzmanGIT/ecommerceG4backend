@@ -119,4 +119,4 @@ class AgregarDetallePedidoApiView(CreateAPIView):
             #rollback
             return Response(data={'message':'Error al crear el pedido'},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        return Response(data={'message':'Detalle creado exitosamente'},status=status.HTTP_201_CREATED)
+        return Response(data={'message':'Detalle creado exitosamente'},status=status.HTTP_201_CREATED)  
