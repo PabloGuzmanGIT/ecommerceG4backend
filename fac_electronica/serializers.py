@@ -10,4 +10,4 @@ class GenerarComprobanteSerializer(serializers.Serializer):
 class ComprobanteSerializer(serializers.ModelSerializer):
     class Meta:
         model=Comprobante
-        fields='--all--'
+        fields='__all__'

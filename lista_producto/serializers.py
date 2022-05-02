@@ -1,12 +1,17 @@
 from rest_framework import serializers
-from .models import Mueble,ListaProducto
+from .models import Muebles,ListaProducto
 from fac_electronica.models import Pedido
 
-class MuebleSerializer(serializers.ModelSerializer):
+class MueblesSerializer(serializers.ModelSerializer):
     class Meta:
         fields='__all__'
-        model=Mueble
-
+        model=Muebles        
+ 
+class MuebleSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields='categoria'
+        model=Muebles
+        depth=1
 
 class ListaProductoSerializer(serializers.ModelSerializer):
     class Meta:
