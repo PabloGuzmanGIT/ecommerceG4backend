@@ -9,9 +9,7 @@ class Pedido(models.Model):
     fecha=models.DateTimeField(default=timezone.now)
     total=models.FloatField(null=False)
     numeroDocumentoCliente=models.CharField(max_length=12,null=True)
-    tipoDocumentoCliente=models.CharField(choices=(['RUC','RUC'],['DNI','DNI']),max_length=5,null=True)
-    mesa=models.IntegerField(null=False)
-    propina=models.IntegerField()
+    tipoDocumentoCliente=models.CharField(choices=(['RUC','RUC'],['DNI','DNI']),max_length=5,null=True) 
 
     # comprobante=models.OneToOneField(
     #     to=Usuario,related_name='pedidos',on_delete=models.CASCADE, db_column='usuario_id' 

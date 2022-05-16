@@ -22,7 +22,7 @@ class ListaProducto(models.Model): #tabla referencia menus
     fecha=models.DateField(null=False)         
     cantidad=models.IntegerField(null=False)
     precio_diario=models.FloatField(null=False)    
-    muebleId=models.ForeignKey(to=Muebles,related_name="lista_productos",on_delete=models.CASCADE,db_column='lista_producto_id')
+    muebleId=models.ForeignKey(to=Muebles,related_name='lista_productos',on_delete=models.CASCADE,db_column='lista_producto_id')
     class Meta:
         db_table='lista_productos'
         #unique-together: crea un indice de dos o mas columnas :: foregin key

@@ -33,3 +33,18 @@ class AgregarDetallePedidoSerializer(serializers.Serializer):
     cantidad=serializers.IntegerField(min_value=1)
     pedidoId = serializers.IntegerField(min_value=1)
     muebleId=serializers.IntegerField(min_value=1)
+
+
+class BuscarMueblesSerializer(serializers.Serializer):
+    categoria=serializers.CharField()
+
+class AgregarListadoProductosSerializer(serializers.Serializer):
+    fecha = serializers.DateTimeField()
+    cantidad = serializers.IntegerField(min_value=1)
+    precio_diario = serializers.IntegerField(min_value=1)
+    muebleId = serializers.IntegerField(min_value=1)
+
+class ListaProductosSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields='__all__'
+        model=ListaProducto       
