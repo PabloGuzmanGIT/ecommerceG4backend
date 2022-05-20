@@ -1,5 +1,5 @@
-from .models import Muebles,ListaProducto
-from rest_framework.generics import ListCreateAPIView,CreateAPIView,ListAPIView,RetrieveAPIView
+from .models import Muebles,ListaProducto, Picture
+from rest_framework.generics import ListCreateAPIView,CreateAPIView,ListAPIView,RetrieveAPIView, DestroyAPIView
 from .serializers import ( 
                             MueblesSerializer,
                             MuebleSerializer,                        
@@ -8,7 +8,11 @@ from .serializers import (
                             ListaProductoSerializer,
                             ListaProductoCreateSerializer,
                             AgregarListadoProductosSerializer,
-                            ListaProductosSerializer                                                 
+                            ListaProductosSerializer,
+                            ArchivoSerializer,
+                            EliminarArchivoSerializer,
+                            ArchivoPictureSerializer,     
+                            PruebaDisponibleSerializer                                                                       
                         )
 from rest_framework.permissions import (# sirve para que el controlador sea publico (no se necesite una token)
                                         AllowAny,  
@@ -27,6 +31,11 @@ from .permissions import SoloAdminPuedeEscribir,SoloClientePuedeEscribir
 from fac_electronica.models import Pedido,DetallePedido
 from rest_framework import status
 from django.utils import timezone
+from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
+from os import remove
+from django.conf import settings
 from django.db import transaction,IntegrityError
 from django.shortcuts import get_list_or_404, get_object_or_404
 
@@ -183,6 +192,16 @@ class AgregarListadoProductosApiView(CreateAPIView):
         
         return Response(data=data.data)
 
+
+class ListaProductosApiView(ListAPIView):
+    queryset = ListaProducto.objects.all()
+    serializer_class = ListaProductosSerializer
+    permission_classes = [IsAuthenticated,SoloClientePuedeEscribir]
+
+    def get(self, request:Request):
+        data = self.serializer_class(instance=self.get_queryset(), many=True)
+        return Response(data=data.data)
+
 class BuscarCategoriaProductosApiView(ListAPIView):
     queryset = Muebles.objects.all()
     serializer_class = MueblesSerializer
@@ -205,28 +224,94 @@ class BuscarCategoriaProductosApiView(ListAPIView):
         return Response(data.data)
 
 class BuscarProductosDisponiblesApiView(ListAPIView):
-    serializer_class = ListaProductosSerializer    
-    queryset = ListaProducto.objects.all()
+    serializer_class = MueblesSerializer
+    queryset = Muebles.objects.all()
     permission_classes = [IsAuthenticated,SoloClientePuedeEscribir]
-     
+
     def get(self, request:Request):
-        listadoProductoId = self.request.query_params.get('id', None)
+        muebleId = self.request.query_params.get('id')
+        mueble: Muebles | None = Muebles.objects.filter(id=muebleId).first()
 
-        listaProducto: ListaProducto | None = ListaProducto.objects.filter(id=listadoProductoId).first()
-
-        if listaProducto is None:
-            return Response(data={'message':'Código de stock de mueble no existe'})
-        
-        mueble: Muebles | None = Muebles.objects.filter(id=listaProducto.muebleId.id).first()
-             
-        if mueble.disponible == False:
-            return Response(data={'message':'Mueble no disponible'},status=status.HTTP_404_NOT_FOUND)
+        if mueble.disponible==False:
+            return Response(data={'message':'El mueble no está disponible'})
         else:
-            data = self.serializer_class(instance=listaProducto)        
-            return Response(data.data)
+           listaproducto= ListaProducto.objects.filter(muebleId=mueble.id).all()
+           print(listaproducto)
+           qslista = ListaProductoSerializer(instance=listaproducto, many=True)
+               
+           return Response({'content':qslista.data})
 
-    
-    
+class ArchivosApiView(CreateAPIView):
+    serializer_class = ArchivoSerializer
+
+    def post(self, request: Request):
+        # para ingresar a los archivos provenientes del form-data usamos el .FILES
+        print(request.FILES)
+        # validar que en base al query params modelo se guarde en la determinada carpeta, si no hay ningun modelo entonces guardarlo afuera (dentro de imagenes)
+        queryParams = request.query_params
+        carpetaDestino = queryParams.get('carpeta')
+
+        data = self.serializer_class(data=request.FILES)
+        if data.is_valid():
+            print(type(data.validated_data.get('archivo')))
+            # https://docs.djangoproject.com/es/4.0/_modules/django/core/files/uploadedfile/
+            archivo: InMemoryUploadedFile = data.validated_data.get('archivo')
+            print(archivo.size)
+            # solamente subir imagenes de hasta 5Mb
+            # 5 (bytes) * 1024 >  (kb) * 1024 > (Mb)
+            # byte      kb     mb
+            # 5     * 1024 * 1024
+            if archivo.size > (5 * 1024 * 1024):
+                return Response(data={
+                    'message': 'Archivo muy grande, no puede ser mas de 5Mb'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            # https://docs.djangoproject.com/en/4.0/topics/files/#storage-objects
+            # el metodo read() sirve para leer el archivo PEEERO la lectura hara que tambien se elimine de la memoria temporal por ende no se puede llamar dos o mas veces a este metodo ya que la segunda ya no tendremos archivo que mostrar
+            resultado = default_storage.save(
+                # usar un operador ternario para que si es que la carpetaDestino no es None ponerla caso
+                (carpetaDestino+'/' if carpetaDestino is not None else '') + archivo.name, ContentFile(archivo.read()))
+
+            print(resultado)
+            return Response(data={
+                'message': 'archivo guardado exitosamente',
+                'content': {
+                    'ubicacion': resultado
+                }
+            }, status=status.HTTP_201_CREATED)
+        else:
+            return Response(data={
+                'message': 'Error al subir la imagen',
+                'content': data.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+
+class EliminarArchivoApiView(DestroyAPIView):
+    # el generico DestroyAPIView solicita una pk como parametro de la url para eliminar un determinado registro de un modelo pero se personalizara para no recibir ello
+    serializer_class = EliminarArchivoSerializer
+
+    def delete(self, request: Request):
+        data = self.serializer_class(data=request.data)
+        try:
+            data.is_valid(raise_exception=True)
+            ubicacion = data.validated_data.get('archivo')
+            # Eliminara el archivo ubicado en esa direccion
+            remove(settings.MEDIA_ROOT / ubicacion)
+
+            return Response(data={
+                'message': 'Archivo eliminado exitosamente',
+            })
+
+        except Exception as e:
+
+            return Response(data={
+                'message': 'Error al eliminar el archivo',
+                'content': e.args
+            }, status=status.HTTP_404_NOT_FOUND)
+
+class ArchivoPictureApiView(CreateAPIView):
+    serializer_class= ArchivoPictureSerializer
+    queryset = Picture.objects.all()
   
 
             

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Muebles,ListaProducto
+from .models import Muebles,ListaProducto, Picture
 from fac_electronica.models import Pedido
 
 class MueblesSerializer(serializers.ModelSerializer):
@@ -47,4 +47,24 @@ class AgregarListadoProductosSerializer(serializers.Serializer):
 class ListaProductosSerializer(serializers.ModelSerializer):
     class Meta:
         fields='__all__'
-        model=ListaProducto       
+        model=ListaProducto
+
+class ArchivoSerializer(serializers.Serializer):
+    # max_length > indica la longitud maxima DEL NOMBRE del archivo
+    # use_url > si es verdadero retornara el link completo de la ubicacion del archivo, caso contrario retornara solamente la ubicacion dentro del proyecto del archivo
+
+    archivo = serializers.ImageField(max_length=100, use_url=True)
+
+class EliminarArchivoSerializer(serializers.Serializer):
+    archivo = serializers.CharField(max_length=100)
+
+class PruebaDisponibleSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields='__all__'
+        model=Muebles  
+
+class ArchivoPictureSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        fields='__all__'
+        model=Picture     
